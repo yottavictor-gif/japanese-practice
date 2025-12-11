@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日文句子重組練習</title>
+    <style>
+        :root {
+            --bg-color: #E0D3E8; /* 圖片背景色 */
+            --text-color: #2c2c2c;
+            --accent-color: #5D4E70;
+            --correct-color: #4CAF50;
+            --wrong-color: #f44336;
+        }
+
+        body {
+            font-family: "Hiragino Kaku Gothic Pro", "Meiryo", "Noto Sans JP", sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: var(--text-color);
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.6);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 800px;
+            width: 90%;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        /* 句子區域 */
+        .sentence-area {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: baseline;
+            gap: 10px;
+            line-height: 2.5;
+        }
+
+        .fixed-text {
+            white-space: nowrap;
+        }
+
+        /* 填空槽 */
+        .slot-container {
+            display: flex;
+            gap: 8px;
+            border-bottom: 2px solid #333;
+            min-width: 200px;
+            padding: 0 10px;
+            justify-content: center;
+        }
+
+        .slot-word {
+            background-color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            animation: popIn 0.3s ease;
+        }
+
+        .slot-word:hover {
+            background-color: #ffe0e0;
+        }
+
+        /* 選項區域 */
+        .options-area {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 2rem;
+            min-height: 80px; /* 預留高度避免跳動 */
+        }
+
+        .option-card {
+            background-color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #ccc;
+            transition: transform 0.1s, box-shadow 0.1s;
+            position: relative;
+        }
+
+        .option-card:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #ccc;
+        }
+
+        .option-card.disabled {
+            opacity: 0.3;
+            pointer-events: none;
+            box-shadow: none;
+            transform: translateY(4px);
+        }
+
+        .option-number {
+            font-size: 0.8rem;
+            color: #888;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+
+        /* 假名標注樣式 */
+        ruby {
+            ruby-position: over;
+        }
+        rt {
+            font-size: 0.5em;
+            color: #555;
+        }
+
+        /* 按鈕 */
+        .btn {
+            padding: 10px 25px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+
+        .btn-check {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        
+        .btn-check:hover { opacity: 0.9; transform: scale(1.05); }
+
+        .btn-reset {
+            background-color: #ccc;
+            color: #333;
+        }
+
+        /* 結果與解說 */
+        .feedback-area {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none; /* 預設隱藏 */
+        }
+
+        .feedback-area.correct {
+            background-color: #e8f5e9;
+            border: 2px solid var(--correct-color);
+            display: block;
+        }
+
+        .feedback-area.wrong {
+            background-color: #ffebee;
+            border: 2px solid var(--wrong-color);
+            display: block;
+            animation: shake 0.5s;
+        }
+
+        .explanation {
+            text-align: left;
+            margin-top: 15px;
+            font-size: 1rem;
+            color: #444;
+            line-height: 1.6;
+        }
+
+        .translation {
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        /* Mobile RWD */
+        @media (max-width: 600px) {
+            .sentence-area { font-size: 1.2rem; }
+            .option-card { font-size: 1.1rem; padding: 8px 15px; }
+            .slot-container { min-width: 100px; flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>請點擊下方選項，將句子重組為正確順序</h1>
+
+    <div class="sentence-area">
+        <span class="fixed-text">おでんは</span>
+        
+        <div class="slot-container" id="answer-slots">
+            </div>
+
+        <span class="fixed-text">
+            <ruby>鍋料理<rt>なべりょうり</rt></ruby>だ。
+        </span>
+    </div>
+
+    <div class="options-area" id="options-pool">
+        <div class="option-card" data-id="1" onclick="selectOption(1)">
+            <span class="option-number">1</span>コンビニでも
+        </div>
+        <div class="option-card" data-id="2" onclick="selectOption(2)">
+            <span class="option-number">2</span><ruby>買<rt>か</rt></ruby>える
+        </div>
+        <div class="option-card" data-id="3" onclick="selectOption(3)">
+            <span class="option-number">3</span><ruby>人気<rt>にんき</rt></ruby>の
+        </div>
+        <div class="option-card" data-id="4" onclick="selectOption(4)">
+            <span class="option-number">4</span><ruby>手軽<rt>てがる</rt></ruby>に
+        </div>
+    </div>
+
+    <div>
+        <button class="btn btn-reset" onclick="resetGame()">重置</button>
+        <button class="btn btn-check" onclick="checkAnswer()">檢查答案</button>
+    </div>
+
+    <div id="feedback" class="feedback-area">
+        <h2 id="feedback-title"></h2>
+        <div id="feedback-content" class="explanation"></div>
+    </div>
+</div>
+
+<script>
+    // 定義選項內容
+    const optionsData = {
+        1: '1 コンビニでも',
+        2: '2 <ruby>買<rt>か</rt></ruby>える',
+        3: '3 <ruby>人気<rt>にんき</rt></ruby>の',
+        4: '4 <ruby>手軽<rt>てがる</rt></ruby>に'
+    };
+
+    // 正確答案順序 (根據語法分析)
+    // おでんは [コンビニでも] [手軽に] [買える] [人気の] 鍋料理だ。
+    const correctOrder = [1, 4, 2, 3];
+
+    // 目前使用者選擇的順序
+    let currentSelection = [];
+
+    // 選取選項
+    function selectOption(id) {
+        // 如果已經選了4個，就不能再選
+        if (currentSelection.length >= 4) return;
+        
+        // 加入選擇陣列
+        currentSelection.push(id);
+        
+        // 更新畫面
+        render();
+    }
+
+    // 取消選項 (點擊填空區的詞彙時)
+    function removeOption(index) {
+        currentSelection.splice(index, 1);
+        render();
+        
+        // 隱藏結果區
+        document.getElementById('feedback').className = 'feedback-area';
+    }
+
+    // 渲染畫面 (核心邏輯)
+    function render() {
+        const slotsContainer = document.getElementById('answer-slots');
+        const poolContainer = document.getElementById('options-pool');
+        
+        // 1. 清空填空區
+        slotsContainer.innerHTML = '';
+        
+        // 2. 填入已選的詞
+        currentSelection.forEach((id, index) => {
+            const span = document.createElement('span');
+            span.className = 'slot-word';
+            span.innerHTML = optionsData[id].replace(/^\d\s/, ''); // 去掉數字顯示在句子中比較自然
+            span.onclick = () => removeOption(index);
+            slotsContainer.appendChild(span);
+        });
+
+        // 3. 更新下方選項的狀態 (如果被選了，就變灰/不可點)
+        const allOptions = document.querySelectorAll('.option-card');
+        allOptions.forEach(card => {
+            const id = parseInt(card.getAttribute('data-id'));
+            if (currentSelection.includes(id)) {
+                card.classList.add('disabled');
+            } else {
+                card.classList.remove('disabled');
+            }
+        });
+    }
+
+    // 檢查答案
+    function checkAnswer() {
+        const feedbackEl = document.getElementById('feedback');
+        const titleEl = document.getElementById('feedback-title');
+        const contentEl = document.getElementById('feedback-content');
+
+        if (currentSelection.length !== 4) {
+            alert('請將四個空格都填滿喔！');
+            return;
+        }
+
+        // 比對陣列是否相等
+        const isCorrect = JSON.stringify(currentSelection) === JSON.stringify(correctOrder);
+
+        if (isCorrect) {
+            feedbackEl.className = 'feedback-area correct';
+            titleEl.textContent = '🎉 正確！太棒了！';
+            titleEl.style.color = 'green';
+            contentEl.innerHTML = `
+                <span class="translation">中文翻譯：關東煮是一種在便利商店也能輕鬆買到的熱門鍋物料理。</span>
+                <hr style="border:0; border-top:1px solid #ddd; margin:10px 0;">
+                <strong>💡 語法解析：</strong><br>
+                這題的關鍵在於修飾名詞「鍋料理（なべりょうり）」。<br><br>
+                1. <strong>人気の (3)</strong>：直接修飾「鍋料理」，變成「熱門的鍋料理」。<br>
+                2. <strong>買える (2)</strong>：動詞可能形，修飾前面的名詞，變成「能買到的...熱門鍋料理」。<br>
+                3. <strong>手軽に (4)</strong>：副詞「輕鬆地/簡單地」，修飾動詞「買える」。<br>
+                4. <strong>コンビニでも (1)</strong>：表示地點/條件，「即使在便利商店」。<br><br>
+                <strong>整句結構：</strong><br>
+                コンビニでも (即使在便利商店) -> 手軽に (輕鬆地) -> 買える (能買到的) -> 人気の (熱門的) -> 鍋料理 (鍋物)。
+            `;
+        } else {
+            feedbackEl.className = 'feedback-area wrong';
+            titleEl.textContent = '❌ 再試一次看看？';
+            titleEl.style.color = '#d32f2f';
+            contentEl.innerHTML = `
+                提示：<br>
+                1. 最後的名詞是「鍋料理」。請問這四個選項中，哪一個最適合直接放在「鍋料理」前面修飾它？(是形容詞性質的詞)<br>
+                2. 「買える」(能買) 是動詞，它前面通常接副詞來形容「怎麼買」。
+            `;
+        }
+    }
+
+    // 重置遊戲
+    function resetGame() {
+        currentSelection = [];
+        document.getElementById('feedback').className = 'feedback-area';
+        render();
+    }
+</script>
+
+</body>
+</html>
